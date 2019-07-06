@@ -5,7 +5,7 @@ import shutil
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from ykdpyutil.time import datetimes
+from ykdpyutil import datetimes
 
 FILE_NAME_DELIMITER = "."
 
