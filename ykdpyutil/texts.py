@@ -45,3 +45,15 @@ def min_width(list: List[str]) -> int:
         最小幅（半角:1、全角:2）
     """
     return min(map(width, list))
+
+
+def reverse(text: str) -> str:
+    """指定した文字列の逆順の文字列を取得する。
+
+    Args:
+        text: 文字列
+
+    Returns:
+        逆順の文字列
+    """
+    return "".join(list(reversed(text)))
