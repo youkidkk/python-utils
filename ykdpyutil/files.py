@@ -59,6 +59,7 @@ def get_paths(root: Optional[str],
         is_root = os.path.samefile(cast_root, p)
         result = not is_root and p_filter(p)
         return result
+    # フィルタリングして返却
     return list(filter(flt, plist))
 
 
