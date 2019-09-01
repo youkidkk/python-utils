@@ -1,9 +1,10 @@
 """ファイル関連のユーティリティモジュール。
 """
+import glob
 import os
 import shutil
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import cast, List, Optional, Tuple
 
 from ykdpyutil import datetimes
 
@@ -37,7 +38,8 @@ def get_dirs(root: Optional[str], filter=lambda p: True) -> List[str]:
                      lambda p: os.path.isdir(p) and p != root and filter(p))
 
 
-def get_paths(root: Optional[str], filter=lambda p: True) -> List[str]:
+def get_paths(root: Optional[str],
+              p_filter=lambda p: True, recursive=True) -> List[str]:
     """パス配下のパスリストを取得する。
 
     Args:
@@ -49,15 +51,15 @@ def get_paths(root: Optional[str], filter=lambda p: True) -> List[str]:
     """
     if root is None:
         return []
-    result = []
-    for dir, _, files in os.walk(root):
-        if filter(dir):
-            result.append(dir)
-        for file in files:
-            path = os.path.join(dir, file)
-            if filter(path):
-                result.append(path)
-    return result
+    cast_root = cast(str, root)
+    plist = glob.glob(os.path.join(cast_root, "**"), recursive=recursive)
+
+    # ルートフォルダ以外 かつ パラメータフィルター でフィルター生成
+    def flt(p):
+        is_root = os.path.samefile(cast_root, p)
+        result = not is_root and p_filter(p)
+        return result
+    return list(filter(flt, plist))
 
 
 def check_exists(path: str) -> None:
