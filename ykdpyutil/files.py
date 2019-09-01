@@ -11,31 +11,37 @@ from ykdpyutil import datetimes
 FILE_NAME_DELIMITER = "."
 
 
-def get_files(root: Optional[str], filter=lambda p: True) -> List[str]:
+def get_files(root: Optional[str], filter=lambda p: True,
+              recursive=True) -> List[str]:
     """パス配下のファイルリストを取得する。
 
     Args:
         root: 対象パス
         filter: フィルター
+        recursive: 再帰的検索を行うか
 
     Returns:
         パス配下のファイルリスト
     """
-    return get_paths(root, lambda p: os.path.isfile(p) and filter(p))
+    return get_paths(root, lambda p: os.path.isfile(p) and filter(p),
+                     recursive)
 
 
-def get_dirs(root: Optional[str], filter=lambda p: True) -> List[str]:
+def get_dirs(root: Optional[str], filter=lambda p: True,
+             recursive=True) -> List[str]:
     """パス配下のディレクトリリストを取得する。
 
     Args:
         root: 対象パス
         filter: フィルター
+        recursive: 再帰的検索を行うか
 
     Returns:
         パス配下のディレクトリリスト
     """
     return get_paths(root,
-                     lambda p: os.path.isdir(p) and p != root and filter(p))
+                     lambda p: os.path.isdir(p) and p != root and filter(p),
+                     recursive)
 
 
 def get_paths(root: Optional[str],
@@ -45,6 +51,7 @@ def get_paths(root: Optional[str],
     Args:
         root: 対象パス
         filter: フィルター
+        recursive: 再帰的検索を行うか
 
     Returns:
         パス配下のパスリスト
