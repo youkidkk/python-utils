@@ -11,47 +11,51 @@ from ykdpyutil import datetimes
 FILE_NAME_DELIMITER = "."
 
 
-def get_files(root: Optional[str], filter=lambda p: True,
-              recursive=True) -> List[str]:
+def get_files(root: Optional[str],
+              recursive=False,
+              path_filter=lambda p: True) -> List[str]:
     """パス配下のファイルリストを取得する。
 
     Args:
         root: 対象パス
-        filter: フィルター
         recursive: 再帰的検索を行うか
+        path_filter: フィルター
 
     Returns:
         パス配下のファイルリスト
     """
-    return get_paths(root, lambda p: os.path.isfile(p) and filter(p),
-                     recursive)
+    return get_paths(root,
+                     recursive,
+                     lambda p: os.path.isfile(p) and path_filter(p))
 
 
-def get_dirs(root: Optional[str], filter=lambda p: True,
-             recursive=True) -> List[str]:
+def get_dirs(root: Optional[str],
+             recursive=False,
+             path_filter=lambda p: True) -> List[str]:
     """パス配下のディレクトリリストを取得する。
 
     Args:
         root: 対象パス
-        filter: フィルター
         recursive: 再帰的検索を行うか
+        path_filter: フィルター
 
     Returns:
         パス配下のディレクトリリスト
     """
     return get_paths(root,
-                     lambda p: os.path.isdir(p) and p != root and filter(p),
-                     recursive)
+                     recursive,
+                     lambda p: os.path.isdir(p) and path_filter(p))
 
 
 def get_paths(root: Optional[str],
-              p_filter=lambda p: True, recursive=True) -> List[str]:
+              recursive=False,
+              path_filter=lambda p: True) -> List[str]:
     """パス配下のパスリストを取得する。
 
     Args:
         root: 対象パス
-        filter: フィルター
         recursive: 再帰的検索を行うか
+        path_filter: フィルター
 
     Returns:
         パス配下のパスリスト
@@ -64,7 +68,7 @@ def get_paths(root: Optional[str],
     # ルートフォルダ以外 かつ パラメータフィルター でフィルター生成
     def flt(p):
         is_root = os.path.samefile(cast_root, p)
-        result = not is_root and p_filter(p)
+        result = not is_root and path_filter(p)
         return result
     # フィルタリングして返却
     return list(filter(flt, plist))
