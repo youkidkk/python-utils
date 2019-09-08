@@ -1,9 +1,9 @@
 """ファイル関連のユーティリティモジュール。
 """
-import glob
 import os
 import shutil
 from datetime import datetime
+from pathlib import Path
 from typing import cast, List, Optional, Tuple
 
 from ykdpyutil import datetimes
@@ -11,9 +11,9 @@ from ykdpyutil import datetimes
 FILE_NAME_DELIMITER = "."
 
 
-def get_files(root: Optional[str],
+def get_files(root: Optional[Path],
               recursive=False,
-              path_filter=lambda p: True) -> List[str]:
+              path_filter=lambda p: True) -> List[Path]:
     """パス配下のファイルリストを取得する。
 
     Args:
@@ -26,12 +26,12 @@ def get_files(root: Optional[str],
     """
     return get_paths(root,
                      recursive,
-                     lambda p: os.path.isfile(p) and path_filter(p))
+                     lambda p: p.is_file() and path_filter(p))
 
 
-def get_dirs(root: Optional[str],
+def get_dirs(root: Optional[Path],
              recursive=False,
-             path_filter=lambda p: True) -> List[str]:
+             path_filter=lambda p: True) -> List[Path]:
     """パス配下のディレクトリリストを取得する。
 
     Args:
@@ -44,12 +44,12 @@ def get_dirs(root: Optional[str],
     """
     return get_paths(root,
                      recursive,
-                     lambda p: os.path.isdir(p) and path_filter(p))
+                     lambda p: p.is_dir() and path_filter(p))
 
 
-def get_paths(root: Optional[str],
+def get_paths(root: Optional[Path],
               recursive=False,
-              path_filter=lambda p: True) -> List[str]:
+              path_filter=lambda p: True) -> List[Path]:
     """パス配下のパスリストを取得する。
 
     Args:
@@ -62,50 +62,44 @@ def get_paths(root: Optional[str],
     """
     if root is None:
         return []
-    cast_root = cast(str, root)
-    plist = glob.glob(os.path.join(cast_root, "**"), recursive=recursive)
+    cast_root = cast(Path, root)
+    plist = cast_root.rglob("*") if recursive else cast_root.glob("*")
 
-    # ルートフォルダ以外 かつ パラメータフィルター でフィルター生成
-    def flt(p):
-        is_root = os.path.samefile(cast_root, p)
-        result = not is_root and path_filter(p)
-        return result
-    # フィルタリングして返却
-    return list(filter(flt, plist))
+    return list(filter(path_filter, plist))
 
 
-def check_exists(path: str) -> None:
+def check_exists(path: Path) -> None:
     """対象パスの存在を確認する。
 
     Args:
         path: 対象パス
     """
-    if not os.path.exists(path):
-        raise OSError("Target path is not found. {}".format(path))
+    if not path.exists():
+        raise OSError("Target path is not found. {}".format(str(path)))
 
 
-def check_not_exists(path: str) -> None:
+def check_not_exists(path: Path) -> None:
     """対象パスの非存在を確認する。
 
     Args:
         path: 対象パス
     """
-    if os.path.exists(path):
-        raise OSError("Target path is already exists. {}".format(path))
+    if path.exists():
+        raise OSError("Target path is already exists. {}".format(str(path)))
 
 
-def make_parent_dir(path: str) -> None:
+def make_parent_dir(path: Path) -> None:
     """対象パスの親ディレクトリを作成する。
 
     Args:
         path: 対象パス
     """
-    parent = os.path.dirname(path)
-    if not os.path.exists(parent):
-        os.makedirs(parent)
+    parent = path.parent
+    if not parent.exists():
+        parent.mkdir(parents=True)
 
 
-def copy(src: Optional[str], dst: Optional[str]) -> None:
+def copy(src: Optional[Path], dst: Optional[Path]) -> None:
     """指定パスのコピーを行う。
 
     Args:
@@ -123,7 +117,7 @@ def copy(src: Optional[str], dst: Optional[str]) -> None:
         shutil.copytree(src, dst)
 
 
-def move(src: Optional[str], dst: Optional[str]) -> None:
+def move(src: Optional[Path], dst: Optional[Path]) -> None:
     """指定パスの移動を行う。
 
     Args:
@@ -138,7 +132,7 @@ def move(src: Optional[str], dst: Optional[str]) -> None:
     shutil.move(src, dst)
 
 
-def delete(target: Optional[str]) -> None:
+def delete(target: Optional[Path]) -> None:
     """対象パスの削除を行う。
 
     Args:
@@ -147,13 +141,13 @@ def delete(target: Optional[str]) -> None:
     if target is None:
         return None
     check_exists(target)
-    if os.path.isfile(target):
+    if target.is_file():
         os.remove(target)
     else:
         shutil.rmtree(target)
 
 
-def clear_dir(root: Optional[str]) -> None:
+def clear_dir(root: Optional[Path]) -> None:
     """ディレクトリ配下のファイル、ディレクトリを再帰的に削除する。
 
     Args:
@@ -163,15 +157,15 @@ def clear_dir(root: Optional[str]) -> None:
         return None
     if not os.path.exists(root):
         return None
-    paths = get_paths(root, lambda p: p != root)
+    paths = get_paths(root, recursive=True)
     for path in reversed(paths):
-        if os.path.isfile(path):
-            os.remove(path)
+        if path.is_file():
+            path.unlink()
         else:
-            os.rmdir(path)
+            path.rmdir()
 
 
-def get_times(path: Optional[str]) \
+def get_times(path: Optional[Path]) \
         -> Tuple[Optional[datetime], Optional[datetime], Optional[datetime]]:
     """パスの日時を取得する。
 
@@ -183,15 +177,15 @@ def get_times(path: Optional[str]) \
     """
     if path is None:
         return (None, None, None)
-    if not os.path.exists(path):
+    if not path.exists():
         return (None, None, None)
-    stat = os.stat(path)
+    stat = path.stat()
     return (datetimes.get_from_utc(stat.st_ctime),
             datetimes.get_from_utc(stat.st_mtime),
             datetimes.get_from_utc(stat.st_atime))
 
 
-def get_created(path: Optional[str]) -> Optional[datetime]:
+def get_created(path: Optional[Path]) -> Optional[datetime]:
     """パスの作成日時を取得する。
 
     Args:
@@ -204,7 +198,7 @@ def get_created(path: Optional[str]) -> Optional[datetime]:
     return result
 
 
-def get_updated(path: Optional[str]) -> Optional[datetime]:
+def get_updated(path: Optional[Path]) -> Optional[datetime]:
     """パスの更新日時を取得する。
 
     Args:
@@ -217,7 +211,7 @@ def get_updated(path: Optional[str]) -> Optional[datetime]:
     return result
 
 
-def get_accessed(path: Optional[str]) -> Optional[datetime]:
+def get_accessed(path: Optional[Path]) -> Optional[datetime]:
     """パスのアクセス日時を取得する。
 
     Args:
@@ -230,7 +224,7 @@ def get_accessed(path: Optional[str]) -> Optional[datetime]:
     return result
 
 
-def modify_times(path: Optional[str],
+def modify_times(path: Optional[Path],
                  updated: datetime = None, accessed: datetime = None) -> None:
     """パスの日時を変更する。
 
@@ -252,7 +246,7 @@ def modify_times(path: Optional[str],
     os.utime(path, (accessed_utc, updated_utc))
 
 
-def get_prefix_suffix(path: Optional[str]) \
+def get_prefix_suffix(path: Optional[Path]) \
         -> Tuple[Optional[str], Optional[str]]:
     """パスのファイル名、拡張子を取得する。
 
@@ -265,14 +259,14 @@ def get_prefix_suffix(path: Optional[str]) \
     """
     if path is None:
         return None, None
-    basename = os.path.basename(path)
+    basename = path.name
     idx = basename.rfind(".")
     if idx <= 0 or idx >= len(basename) - 1:
         return basename, None
     return basename[0:idx], basename[idx + 1:]
 
 
-def get_prefix(path: Optional[str]) -> Optional[str]:
+def get_prefix(path: Optional[Path]) -> Optional[str]:
     """パスのファイル名（拡張子を除いた部分）を取得する。
 
     Args:
@@ -285,7 +279,7 @@ def get_prefix(path: Optional[str]) -> Optional[str]:
     return result
 
 
-def get_suffix(path: Optional[str]) -> Optional[str]:
+def get_suffix(path: Optional[Path]) -> Optional[str]:
     """パスの拡張子を取得する。
 
     Args:
