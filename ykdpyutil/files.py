@@ -8,6 +8,9 @@ from typing import cast, List, Optional, Tuple
 
 from ykdpyutil import datetimes
 
+ERR_MSG_NOT_EXISTS = "Target path is not found. Path: {0}"
+ERR_MSG_EXISTS = "Target path is already exists. Path: {0}"
+
 
 def get_files(root: Optional[Path],
               recursive=False,
@@ -73,7 +76,7 @@ def check_exists(path: Path) -> None:
         path: 対象パス
     """
     if not path.exists():
-        raise OSError("Target path is not found. {}".format(str(path)))
+        raise OSError(ERR_MSG_NOT_EXISTS.format(str(path)))
 
 
 def check_not_exists(path: Path) -> None:
@@ -83,7 +86,7 @@ def check_not_exists(path: Path) -> None:
         path: 対象パス
     """
     if path.exists():
-        raise OSError("Target path is already exists. {}".format(str(path)))
+        raise OSError(ERR_MSG_EXISTS.format(str(path)))
 
 
 def make_parent_dir(path: Path) -> None:
