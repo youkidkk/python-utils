@@ -8,8 +8,6 @@ from typing import cast, List, Optional, Tuple
 
 from ykdpyutil import datetimes
 
-FILE_NAME_DELIMITER = "."
-
 
 def get_files(root: Optional[Path],
               recursive=False,
@@ -260,7 +258,7 @@ def get_prefix_suffix(path: Optional[Path]) \
     if path is None:
         return None, None
     basename = path.name
-    idx = basename.rfind(".")
+    idx = basename.rfind(os.extsep)
     if idx <= 0 or idx >= len(basename) - 1:
         return basename, None
     return basename[0:idx], basename[idx + 1:]
