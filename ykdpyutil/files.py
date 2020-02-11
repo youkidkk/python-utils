@@ -10,6 +10,8 @@ from ykdpyutil import datetimes
 
 ERR_MSG_NOT_EXISTS = "Target path is not found. Path: {0}"
 ERR_MSG_EXISTS = "Target path is already exists. Path: {0}"
+ERR_MSG_NOT_DIR = "Target path is not directory. Path: {0}"
+ERR_MSG_NOT_EMPTY = "Target path is not empty. Path: {0}"
 
 
 def get_files(root: Optional[Path],
@@ -77,6 +79,22 @@ def check_exists(path: Path) -> None:
     """
     if not path.exists():
         raise OSError(ERR_MSG_NOT_EXISTS.format(str(path)))
+
+
+def check_empty(path: Path) -> None:
+    """対象パスが空であるか確認する。
+
+    Args:
+        path: 対象パス
+    """
+    if path is None:
+        return
+    cast_path = cast(Path, path)
+    check_exists(cast_path)
+    if not path.is_dir():
+        raise OSError(ERR_MSG_NOT_DIR.format(str(cast_path)))
+    if len(os.listdir(str(cast_path))) > 0:
+        raise OSError(ERR_MSG_NOT_EMPTY.format(str(cast_path)))
 
 
 def check_not_exists(path: Path) -> None:
