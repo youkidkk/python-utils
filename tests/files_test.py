@@ -189,6 +189,28 @@ class FilesTest(unittest.TestCase):
             str(cm.exception),
             files.ERR_MSG_EXISTS.format(TEST_DIR))
 
+    def test_check_not_empty(self):
+        self.clear_temp_dir()
+
+        # テスト対象の実行
+        files.check_empty(TEMP_DIR)
+
+    def test_check_not_empty_raises_not_dir(self):
+        with self.assertRaises(OSError) as cm:
+            # テスト対象の実行
+            files.check_empty(TEST_PATHS[1])
+        self.assertEqual(
+            str(cm.exception),
+            files.ERR_MSG_NOT_DIR.format(TEST_PATHS[1]))
+
+    def test_check_not_empty_raises_not_empty(self):
+        with self.assertRaises(OSError) as cm:
+            # テスト対象の実行
+            files.check_empty(TEST_DIR)
+        self.assertEqual(
+            str(cm.exception),
+            files.ERR_MSG_NOT_EMPTY.format(TEST_DIR))
+
     def clear_temp_dir(self):
         if TEMP_DIR.exists() and TEMP_DIR.is_file():
             TEMP_DIR.unlink()
