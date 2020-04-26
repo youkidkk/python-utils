@@ -148,7 +148,7 @@ def move(src: Optional[Path], dst: Optional[Path]) -> None:
     check_exists(src)
     check_not_exists(dst)
     make_parent_dir(dst)
-    shutil.move(src, dst)
+    shutil.move(str(src), str(dst))
 
 
 def delete(target: Optional[Path]) -> None:
