@@ -42,3 +42,35 @@ class LinePrinter:
                     break
                 t = t + c
         print("\r" + text, end="")
+
+
+def confirm(msg="よろしいですか？(y/n) ",
+            msg_retry="y または n を入力してください。",
+            key_ok="y",
+            key_ng="n"):
+    """確認入力を行う。
+
+    Args:
+        msg: 確認メッセージ(default: よろしいですか？(y/n))
+        msg_retry: 入力エラー時メッセージ(default: y または n を入力してください。)
+        key_ok: 確認OKキー(default: y)
+        key_ng: 確認NGキー(default: n)
+
+    Returns:
+        True: 確認OK
+        False: 確認NG
+    """
+    while True:
+        print(msg)
+        instr = input(msg)
+        instr_l = instr.lower()
+        if(instr_l == key_ok):
+            return True
+        elif(instr_l == key_ng):
+            return False
+        else:
+            print(msg_retry)
+
+
+res = confirm()
+print(res)
