@@ -1,3 +1,5 @@
+import shutil
+
 from ykdpyutil import texts
 
 
@@ -9,7 +11,10 @@ class LinePrinter:
         fillchar: 空白埋め文字
     """
 
-    def __init__(self, max_width=120, fillchar=" "):
+    def __init__(
+            self,
+            max_width=shutil.get_terminal_size().columns,
+            fillchar=" "):
         """
         Args:
             max_width: 行の最大幅(default: 120)
