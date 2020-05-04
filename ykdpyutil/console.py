@@ -70,7 +70,3 @@ def confirm(msg="よろしいですか？(y/n) ",
             return False
         else:
             print(msg_retry)
-
-
-res = confirm()
-print(res)
